@@ -1,0 +1,13 @@
+<h2> User list </h2>
+ 
+<a href="/book/regist"> registUser </a>
+  
+{% for user in users %}
+ 
+<div>
+    <h3>User：<a href="/book/viewShop/{{user.id}}">{{ user.name }}</a></h3>
+</div>
+
+<hr>
+ 
+{% endfor %}

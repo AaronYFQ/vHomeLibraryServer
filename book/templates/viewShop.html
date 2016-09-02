@@ -1,0 +1,30 @@
+<h2> Shop list </h2>
+ 
+<div>
+= = = = User: {{ user }} = = = =
+</div>
+
+<a href="/book/createShop"> createShop </a>
+<div>
+<a href="/book/delShop"> delShop </a>
+</div>
+
+<div>
+<a href="/book/modifyShop"> modifyShop </a>
+</div>
+<div>
+<a href="/book/listUser"> listUser </a>
+</div>
+  
+
+{% for shop in shops %}
+ 
+<div>
+    <h3>shopName: <a href="/book/viewBook/{{shop.id}}">{{ shop.name }} </a></h3>
+	{{ shop.addr }}
+	{{ shop.comment }} 
+</div>
+
+<hr>
+ 
+{% endfor %}

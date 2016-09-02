@@ -1,0 +1,22 @@
+
+<h2> Response result {{ state }} </h2>
+
+{% for shop in shops %}
+ 
+<div>
+    <h3> {{ shop.name }} {{shop.addr}} {{shop.comment}} </h3>
+</div>
+
+<hr>
+ 
+{% endfor %}
+
+{% for book in books %}
+ 
+<div>
+    <h3> {{ book.name }} {{book.auther}} {{book.publisher}} </h3>
+</div>
+
+<hr>
+ 
+{% endfor %}

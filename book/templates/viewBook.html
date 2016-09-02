@@ -1,0 +1,35 @@
+<h2> Book list </h2>
+ 
+<div>
+<a href="/book/addBook"> addBook </a>
+</div>
+<div>
+<a href="/book/modifyBook"> modifyBook </a>
+</div>
+<div>
+<a href="/book/delBook"> delBook </a>
+</div>
+<div>
+<a href="/book/listUser"> listUser </a>
+</div>
+<div>
+<a href="/book/viewShop/{{user.id}}"> listShop In {{user.name}} </a>
+</div>
+ 
+<div>
+=============================== List book ===================================  
+</div>
+
+{% for book in books %}
+ 
+<div>
+    
+	{{ book.name }}
+	{{ book.author }}
+	{{ book.publisher }}
+ 
+</div>
+
+<hr>
+ 
+{% endfor %}
