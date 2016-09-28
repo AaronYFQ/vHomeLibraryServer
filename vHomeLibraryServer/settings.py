@@ -1,5 +1,5 @@
 """
-Django settings for bookStore project.
+Django settings for vHomeLibraryServer project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
@@ -39,6 +39,7 @@ INSTALLED_APPS = (
 #'online',
 #   'management',
     'book',
+    'book.Util',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -50,11 +51,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+ROOT_URLCONF = 'vHomeLibraryServer.urls'
 
-ROOT_URLCONF = 'bookStore.urls'
-
-WSGI_APPLICATION = 'bookStore.wsgi.application'
+WSGI_APPLICATION = 'vHomeLibraryServer.wsgi.application'
 
 
 # Database
@@ -88,7 +87,7 @@ STATIC_URL = '/static/'
 
 #template
 #TEMPLATE_DIRS=(
-#    '/home/ysk/openSource/summer_camp/deploy/bookStore/book/templates'
+#    '/home/ysk/openSource/summer_camp/deploy/vHomeLibraryServer/book/templates'
 #)
 
 # A data structure containing configuration information.
@@ -161,6 +160,7 @@ LOGGING = {
 }
 
 '''
+'''
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -190,3 +190,58 @@ LOGGING = {
         }
     }
 }
+'''
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s.%(msecs)03d] [%(name)s:%(funcName)s:%(lineno)s] [%(levelname)s]: %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'mysite.log',
+            'formatter': 'verbose'
+        },
+        'console': {
+            'level': 'INFO',
+#            'filters': ['require_debug_false'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'console': {
+            'handlers': ['console'],
+            'level': 'INFO',
+# Log messages written to django.request will not be handled by the django logger.
+            'propagate': False,
+        },
+        'mysite': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+    }
+}
+

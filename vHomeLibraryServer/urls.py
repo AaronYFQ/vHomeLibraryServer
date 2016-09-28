@@ -6,7 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'bookStore.views.home', name='home'),
+    # url(r'^$', 'vHomeLibraryServer.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^book/', include('book.urls')),

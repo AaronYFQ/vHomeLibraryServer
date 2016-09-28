@@ -8,7 +8,7 @@ from book.models import *
 from book.Util.tasks import *
 #from book.Util.pushTask import *
 from book.Util.util import *
-from bookStore import celery_app
+from vHomeLibraryServer import celery_app
 import simplejson
 import random
 import datetime
@@ -19,7 +19,7 @@ import sys, os
 #logger = logging.getLogger(__name__)
 '''
 set log output to console or file
-modify the bookStore/setting.py 
+modify the vHomeLibraryServer/setting.py 
 '''
 logger = logging.getLogger("mysite")
 
