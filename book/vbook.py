@@ -4,20 +4,30 @@ from django.shortcuts import render, render_to_response
 from django.forms.models import model_to_dict
 
 from book.models import *
-from book.Util.upJiGuang import *
+#from book.Util.upJiGuang import *
+from book.Util.tasks import *
 from book.Util.util import *
 import simplejson
 import random
 import datetime
 import logging
 import sys
-#logger = logging.getLogger(__name__)
-logger = logging.getLogger("mysite")
+logger = logging.getLogger(__name__)
+#logger = logging.getLogger("mysite")
 
-
+'''
+function: get current time
+return: Time
+Notice: none
+'''
 def getCurrentTime():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+'''
+function: record footprint of borrowing book
+return: none
+Notice: please sync the status of APP
+'''
 def recordToHistory(user, book_dict):
     if book_dict['action'] == 'borrow':
         if UserCurrentBorrow.checkIsExistThisBook(user.id, book_dict['owner'], book_dict['shop'], book_dict['book'], "borrowing"):
@@ -55,7 +65,11 @@ def recordToHistory(user, book_dict):
         logger.info("no this action")
 
 ######################## B O O K #############################	
-		
+'''
+function: add book to database
+return: states
+Notice：invalid cache of shop
+'''
 def addBook(request):
     state = "fail" 
     dict = {}
@@ -84,8 +98,8 @@ def addBook(request):
                     imageurl = request.POST.get('imageurl', '')
                     extlink = request.POST.get('extlink', '')
                     book = Book.createBookRow(bookname, author, publisher, detail, shop.id, 1, isbn, "", imageurl, extlink)
-                    shop.Belong_Shop.add(book)
-                    shop.changeTag += 1
+# shop.Belong_Shop.add(book)
+                    shop.changeTag += 1 # to invalid cache
                     shop.save()
                     state = 'success'
 
@@ -94,7 +108,11 @@ def addBook(request):
     logger.info(dict)
     return HttpResponse(json)
 
-
+'''
+function: get book
+return: state and the detailed info about book
+notice: none
+'''
 def getBook(request):
     state = "fail"
     dict = {}
@@ -122,6 +140,11 @@ def getBook(request):
     logger.info(dict)
     return HttpResponse(json)
 
+'''
+function: delete book from database
+return: state
+notice: invalid cache
+'''
 def removeBook(request):
     state = "fail" 
     dict = {}
@@ -150,7 +173,11 @@ def removeBook(request):
     logger.info(dict)
     return HttpResponse(json)
 
-
+'''
+function: request to borrow book 
+return: state
+Notice: jpush 
+'''
 def reqBorrowBook(request):
     state = "fail" 
     dict = {}
@@ -189,11 +216,11 @@ def reqBorrowBook(request):
                 alert =  borrower.name + u'  向你借书： <<'.encode('utf-8').decode('utf-8') + bookname + ">>"
                 logger.info(bookname)
                 logger.info(alert)
-                jpushMessageWithRegId(owner.regid, msg, alert);
+                jpushMessageWithRegId.delay(owner.regid, msg, alert); # push message
                     #userEvent = UserEvent.objects.create(user_id=owner.id, owner=owner.name, borrower=borrower.name, \
                     #        book=bookname, time=curtime, shop=shopname, action="borrow")
 #recordToHistory(borrower, model_to_dict(userEvent))
-                
+                 
                 recordToHistory(borrower, {'owner':owner.name,'shop':shopname, 'book':bookname, 'action':action, 'time':curtime})
                 state = 'success'
             
@@ -202,6 +229,11 @@ def reqBorrowBook(request):
     logger.info(dict)
     return HttpResponse(json)
 
+'''
+function:  response about borrowing request -- accept or refuse
+return: state
+notice: jpush
+'''
 def respBorrowAction(request):
     state = "fail"
     dict = {}
@@ -239,7 +271,7 @@ def respBorrowAction(request):
                 msg['count'] = 1
 #alert =  owner.name + u'  同意借书请求'.encode('utf-8').decode('utf-8')
                 alert =  owner.name + u'  同意借书： <<'.encode('utf-8').decode('utf-8') + bookname + ">>"
-                jpushMessageWithRegId(borrower.regid, msg, alert);
+                jpushMessageWithRegId.delay(borrower.regid, msg, alert);
                     #userEvent = UserEvent.objects.create(user_id=borrower.id, owner=owner.name, borrower=fromname, book=bookname, time=curtime, shop=shopname, action=action)
 #recordToHistory(borrower, model_to_dict(userEvent))
                 recordToHistory(borrower, {'owner':owner.name,'shop':shopname, 'book':bookname, 'action':action, 'time':curtime})
@@ -257,6 +289,12 @@ def respBorrowAction(request):
     logger.info(dict)
     return HttpResponse(json)
 
+''' 
+function: return book by owner
+return: status
+notice: not communicate with borrower
+        invalid cache
+'''
 def returnBook(request):
     state = "fail"
     dict = {}
@@ -299,6 +337,11 @@ def returnBook(request):
     logger.info(dict)
     return HttpResponse(json)
 
+''' 
+function: search book by name
+return：booklist 
+notice: none
+'''
 def searchBook(request):
     state = None
     dict = {}
@@ -328,6 +371,11 @@ def searchBook(request):
     logger.info(dict)
     return HttpResponse(json)
 
+'''
+function: get history of borrowing book
+return: booklist that were borrowing
+Notice: none
+'''
 def getCurrentBorrowBook(request):
     state = "fail"
     dict = {}
@@ -353,6 +401,11 @@ def getCurrentBorrowBook(request):
     logger.info(dict)
     return HttpResponse(json)
 
+'''
+function: get history of borrowed book
+return: booklist that were borrowed
+Notice: none
+'''
 def getHistoryBorrowBook(request):
     state = "fail"
     dict = {}

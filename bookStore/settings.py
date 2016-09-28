@@ -39,6 +39,7 @@ INSTALLED_APPS = (
 #'online',
 #   'management',
     'book',
+    'book.Util',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -195,7 +196,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format' : "[%(asctime)s] [%(name)s:%(funcName)s:%(lineno)s] [%(levelname)s]: %(message)s",
+            'format' : "[%(asctime)s.%(msecs)03d] [%(name)s:%(funcName)s:%(lineno)s] [%(levelname)s]: %(message)s",
             'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
@@ -216,9 +217,9 @@ LOGGING = {
         },
         'console': {
             'level': 'INFO',
-            'filters': ['require_debug_false'],
+#            'filters': ['require_debug_false'],
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',
@@ -238,7 +239,7 @@ LOGGING = {
             'propagate': False,
         },
         'mysite': {
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'INFO',
         },
     }
