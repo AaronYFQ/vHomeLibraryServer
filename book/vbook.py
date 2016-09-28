@@ -12,8 +12,8 @@ import random
 import datetime
 import logging
 import sys
-logger = logging.getLogger(__name__)
-#logger = logging.getLogger("mysite")
+#logger = logging.getLogger(__name__)
+logger = logging.getLogger("mysite")
 
 '''
 function: get current time

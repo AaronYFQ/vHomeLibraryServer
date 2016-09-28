@@ -5,11 +5,11 @@ import os
 from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bookStore.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vHomeLibraryServer.settings')
 
 from django.conf import settings  # noqa
 
-app = Celery('bookStore',
+app = Celery('vHomeLibraryServer',
     broker = 'redis://localhost',
     backend = 'redis://localhost',
     )
