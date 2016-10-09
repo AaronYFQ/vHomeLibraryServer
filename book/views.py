@@ -33,7 +33,7 @@ def regist(request):
     state = "fail"
     dict = {}
     
-    add.delay(4,4)
+    # add.delay(4,4)
     logger.info(request.POST)
     logger.info(os.getpid())
     if request.method == 'POST':

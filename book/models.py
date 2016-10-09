@@ -108,11 +108,13 @@ class Book(models.Model):
     borrower  = models.CharField(max_length=128)
     imageurl = models.CharField(max_length = 128)
     extlink = models.CharField(max_length = 128)
+    bookNum = models.IntegerField()
+    availNum = models.IntegerField()
    
     @classmethod
-    def createBookRow(self, bookname, author, publisher, detail, shopid, state, isbn, borrower, imageurl, extlink):
+    def createBookRow(self, bookname, author, publisher, detail, shopid, state, isbn, borrower, imageurl, extlink, bookNum, availNum):
         book = Book.objects.create(name=bookname, author=author, publisher=publisher, detail=detail, shop_id=shopid, state=state,\
-                            isbn=isbn, borrower=borrower, imageurl=imageurl, extlink=extlink)
+                            isbn=isbn, borrower=borrower, imageurl=imageurl, extlink=extlink, bookNum=bookNum, availNum=availNum)
         return book
 
     @classmethod

@@ -79,6 +79,8 @@ def addBook(request):
         token = request.POST.get('token', '')
         shopname = request.POST.get('shopname', '')
         bookname = request.POST.get('bookname', '') 
+        bookNum = request.POST.get('booknum', '')
+        
        
         user = User.getUserWithToken(token)
         if user is None:
@@ -89,7 +91,15 @@ def addBook(request):
                 state = 'invalid user shop name'
             else:
                 if Book.checkIsExistWithName(shop, bookname):
-                    state = 'already have this book in ' + shopname
+                    book = Book.objects.get(name=bookname, shop_id=shop.id)
+                    print book
+                    newNum = int(book.bookNum) + int(bookNum)
+                    newAvail = int(book.availNum) + int(bookNum)
+                    print book.bookNum,newNum,newAvail
+                    Book.objects.filter(name=bookname,shop_id=shop.id).update(bookNum = newNum,availNum = newAvail )
+                    state = 'success'     
+                    shop.changeTag +=1
+                    shop.save()
                 else:
                     author = request.POST.get('bookauthor', '')
                     publisher = request.POST.get('bookpublisher', '')
@@ -97,8 +107,11 @@ def addBook(request):
                     isbn = request.POST.get('bookisbn', '')
                     imageurl = request.POST.get('imageurl', '')
                     extlink = request.POST.get('extlink', '')
-                    book = Book.createBookRow(bookname, author, publisher, detail, shop.id, 1, isbn, "", imageurl, extlink)
-# shop.Belong_Shop.add(book)
+                    availNum = int(bookNum) 
+
+                    book = Book.createBookRow(bookname, author, publisher, detail, shop.id, 1, isbn, "", imageurl, extlink, bookNum, availNum)
+                    # Mr Yang delete below line, why?
+					shop.Belong_Shop.add(book)
                     shop.changeTag += 1 # to invalid cache
                     shop.save()
                     state = 'success'
@@ -154,6 +167,7 @@ def removeBook(request):
         token = request.POST.get('token', '')
         shopname = request.POST.get('shopname', '')
         bookname = request.POST.get('bookname', '') 
+        delBookNum = request.POST.get('booknum','')
 
         user = User.getUserWithToken(token)
         if user is None:
@@ -163,7 +177,15 @@ def removeBook(request):
             if shop is None:
                 state = 'no have this shop in your'
             else:
-                Book.objects.filter(name=bookname, shop_id=shop.id).delete()
+                book = Book.objects.get(name=bookname, shop_id=shop.id)
+                print book
+                newNum = int(book.bookNum) - int(delBookNum)
+                newAvail = int(book.availNum) - int(delBookNum)
+                print book.bookNum, newNum, newAvail
+                if newNum == 0:
+                    Book.objects.filter(name=bookname, shop_id=shop.id).delete()
+                else:
+                    Book.objects.filter(name=bookname, shop_id=shop.id).update(bookNum=newNum, availNum=newAvail)
                 shop.changeTag += 1
                 shop.save()
                 state = 'success'
@@ -256,28 +278,37 @@ def respBorrowAction(request):
                 state = 'no have this shop in your'
             else:
                 book = Book.getBookWithName(bookname, shop.id)
-                curtime = getCurrentTime() 
-                msg = {}
-                msgBook = {}
-                msgBook['owner'] = owner.name
-                msgBook['shop'] = shopname
-                msgBook['book'] = bookname
-                msgBook['borrower'] = borrower.name
-                msgBook['time'] = curtime
-                msgBook['action'] = action 
-                msgList = []
-                msgList.append(msgBook)
-                msg['messages'] =msgList 
-                msg['count'] = 1
+                if book.availNum <= 0:
+                    state = 'no available book'
+                else:
+                    curtime = getCurrentTime()
+                    msg = {}
+                    msgBook = {}
+                    msgBook['owner'] = owner.name
+                    msgBook['shop'] = shopname
+                    msgBook['book'] = bookname
+                    msgBook['borrower'] = borrower.name
+                    msgBook['time'] = curtime
+                    msgBook['action'] = action
+                    msgList = []
+                    msgList.append(msgBook)
+                    msg['messages'] =msgList
+                    msg['count'] = 1
 #alert =  owner.name + u'  同意借书请求'.encode('utf-8').decode('utf-8')
-                alert =  owner.name + u'  同意借书： <<'.encode('utf-8').decode('utf-8') + bookname + ">>"
-                jpushMessageWithRegId.delay(borrower.regid, msg, alert);
+                    alert =  owner.name + u'  同意借书： <<'.encode('utf-8').decode('utf-8') + bookname + ">>"
+                    jpushMessageWithRegId.delay(borrower.regid, msg, alert);
                     #userEvent = UserEvent.objects.create(user_id=borrower.id, owner=owner.name, borrower=fromname, book=bookname, time=curtime, shop=shopname, action=action)
 #recordToHistory(borrower, model_to_dict(userEvent))
                 recordToHistory(borrower, {'owner':owner.name,'shop':shopname, 'book':bookname, 'action':action, 'time':curtime})
-                if action == "accept":
-                    book.borrower = fromname
-                    book.state = 0
+                    if action == "accept":
+                        if book.borrower == "":
+                            book.borrower = fromname
+                        else:
+                            book.borrower += ","+fromname
+
+                        book.availNum -= 1
+                        if book.availNum <= 0:
+                            book.state = 0
                     book.save()
                     shop.changeTag += 1
                     shop.save()
@@ -304,6 +335,7 @@ def returnBook(request):
         token = request.POST.get('token', '')
         shopname = request.POST.get('shopname', '')
         bookname = request.POST.get('bookname', '') 
+        borrowArray = request.POST.get('borrows','').split(',')
         action = "return"#request.POST.get('action', '') 
  
         owner = User.getUserWithToken(token)
@@ -318,14 +350,20 @@ def returnBook(request):
                 if book is None: 
                     state = 'no have this book'
                 else:
-                    borrower = User.getUserWithName(book.borrower)
-                    if borrower is None:
-                        state = "borrower no exist"
-                    else:
-                        curtime = getCurrentTime() 
-                        recordToHistory(borrower, {'owner':owner.name,'shop':shopname, 'book':bookname, 'action':action, 'time':curtime})
-                        book.state = 1
-                        book.borrower = ""
+                    for borr in borrowArray:
+                        borrower = User.getUserWithName(borr)
+                        if borrower is None:
+                            state = "borrower no exist"
+                        else:
+                            curtime = getCurrentTime() 
+                            recordToHistory(borrower, {'owner':owner.name,'shop':shopname, 'book':bookname, 'action':action, 'time':curtime})
+                            book.state = 1
+                            book.borrower = book.borrower.replace(borrower.name, "", 1)
+                            book.borrower = book.borrower.replace(",,", ",")
+                            if book.borrower.find(',') == 0 :
+                                book.borrower = book.borrower[1:]
+                            book.availNum += 1
+                            print book.borrower ,book.availNum
                         book.save()
                         shop.changeTag += 1
                         shop.save()
