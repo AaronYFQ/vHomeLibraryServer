@@ -111,7 +111,7 @@ def addBook(request):
 
                     book = Book.createBookRow(bookname, author, publisher, detail, shop.id, 1, isbn, "", imageurl, extlink, bookNum, availNum)
                     # Mr Yang delete below line, why?
-					shop.Belong_Shop.add(book)
+					#shop.Belong_Shop.add(book)
                     shop.changeTag += 1 # to invalid cache
                     shop.save()
                     state = 'success'
@@ -299,7 +299,7 @@ def respBorrowAction(request):
                     jpushMessageWithRegId.delay(borrower.regid, msg, alert);
                     #userEvent = UserEvent.objects.create(user_id=borrower.id, owner=owner.name, borrower=fromname, book=bookname, time=curtime, shop=shopname, action=action)
 #recordToHistory(borrower, model_to_dict(userEvent))
-                recordToHistory(borrower, {'owner':owner.name,'shop':shopname, 'book':bookname, 'action':action, 'time':curtime})
+                    recordToHistory(borrower, {'owner':owner.name,'shop':shopname, 'book':bookname, 'action':action, 'time':curtime})
                     if action == "accept":
                         if book.borrower == "":
                             book.borrower = fromname
